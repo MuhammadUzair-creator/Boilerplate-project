@@ -1,31 +1,25 @@
 // backend/api/login.js
+const express = require("express");
+const User = require("../models/User");
+const router = express.Router();
 
-import connectDB from "../../config/db-config";
-import User from "../../models/User";
+router.post("/", async (req, res) => {
+  const { email, password } = req.body;
 
-export default async function handler(req, res) {
-  if (req.method === "POST") {
-    const { email, password } = req.body;
-
-    try {
-      // Ensure the database is connected
-      await connectDB();
-
-      // Check if the user exists
-      const user = await User.findOne({ email });
-      if (!user) {
-        return res.status(400).json({ message: "User not found" });
-      }
-
-      // Check if the password matches
-      if (user.password !== password) {
-        return res.status(400).json({ message: "Incorrect password" });
-      }
-
-      // If the email and password are correct
-      res.status(200).json({ message: "Login successful!" });
-    } catch (error) {
-      res.status(500).json({ message: error.message });
+  try {
+    const user = await User.findOne({ email });
+    if (!user) {
+      return res.status(400).json({ message: "User not found" });
     }
+
+    if (user.password !== password) {
+      return res.status(400).json({ message: "Incorrect password" });
+    }
+
+    res.status(200).json({ message: "Login successful!" });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
   }
-}
+});
+
+module.exports = router;
